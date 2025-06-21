@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react'
+import { useSelector } from 'react-redux'
+import { RootState } from '../../store/store'
 import { 
   DollarSign, 
   Coins, 
@@ -36,6 +38,7 @@ const CollectionMonitor: React.FC<CollectionMonitorProps> = ({
   isActive,
   onCollectionUpdate
 }) => {
+  const currentSession = useSelector((state: RootState) => state.session.currentSession)
   const [collectionData, setCollectionData] = useState<CollectionData[]>([])
   const [totalProgress, setTotalProgress] = useState(0)
   const [isCollecting, setIsCollecting] = useState(false)
@@ -73,24 +76,32 @@ const CollectionMonitor: React.FC<CollectionMonitorProps> = ({
       setCollectionData([...updatedData])
 
       try {
-        // Simulate collection process
-        await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 2000))
+        // Real API call to collect from wallet
+        const response = await fetch('/api/cleanup/close-accounts', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            walletAddress: wallet.publicKey,
+            tokenAddress: currentSession?.tokenAddress
+          })
+        })
 
-        // Mock collection amounts
-        const solToCollect = wallet.solBalance * (0.8 + Math.random() * 0.2) // 80-100% of balance
-        const tokensToCollect = wallet.tokenBalance * (0.9 + Math.random() * 0.1) // 90-100% of tokens
-
-        wallet.solCollected = solToCollect
-        wallet.tokensCollected = tokensToCollect
-        wallet.status = Math.random() > 0.05 ? 'completed' : 'failed' // 95% success rate
-
-        if (wallet.status === 'failed') {
-          wallet.error = 'Transaction failed - insufficient gas'
+        if (response.ok) {
+          const data = await response.json()
+          wallet.solCollected = data.solCollected || 0
+          wallet.tokensCollected = data.tokensCollected || 0
+          wallet.status = 'completed'
+        } else {
+          throw new Error('Failed to collect from wallet')
         }
 
       } catch (error) {
         wallet.status = 'failed'
         wallet.error = error instanceof Error ? error.message : String(error)
+        wallet.solCollected = 0
+        wallet.tokensCollected = 0
       }
 
       // Update progress

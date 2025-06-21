@@ -26,6 +26,7 @@ import {
 } from 'lucide-react'
 import { RootState } from '../store/store'
 import { backendService } from '../services/backendService'
+import { monitoringService } from '../services/monitoringService'
 import { 
   setStatus, 
   setStrategy, 
@@ -236,6 +237,31 @@ const Trading: React.FC = () => {
   const handleTransactionUpdate = (transactions: any[]) => {
     setRecentTransactions(transactions)
   }
+
+  // Fetch transactions from backend monitoring API
+  useEffect(() => {
+    const fetchTransactions = async () => {
+      try {
+        const transactions = await monitoringService.getTransactions(50)
+        setRecentTransactions(transactions)
+      } catch (error) {
+        console.error('Failed to fetch transactions:', error)
+        // Don't show error to user, just log it
+      }
+    }
+
+    fetchTransactions()
+    
+    // Set up polling for real-time updates when trading is active
+    let interval: NodeJS.Timeout | null = null
+    if (status === 'running') {
+      interval = setInterval(fetchTransactions, 5000) // Poll every 5 seconds
+    }
+
+    return () => {
+      if (interval) clearInterval(interval)
+    }
+  }, [status])
 
   const handleSwapCalculationUpdate = (calculations: any[]) => {
     setSwapCalculations(calculations)
@@ -471,6 +497,7 @@ const Trading: React.FC = () => {
               
               <SwapCalculator
                 tokenSymbol={currentSession?.tokenName || 'Tokens'}
+                tokenAddress={currentSession?.tokenAddress || ''}
                 onCalculationUpdate={handleSwapCalculationUpdate}
                 isActive={status === 'running'}
               />
