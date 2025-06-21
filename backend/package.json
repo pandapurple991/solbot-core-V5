@@ -1,0 +1,41 @@
+{
+  "name": "raydium-swap-example",
+  "version": "1.0.0",
+  "description": "A volume bot that swaps tokens on Solana using the Raydium SDK.",
+  "type": "commonjs",
+  "main": "index.ts",
+  "scripts": {
+    "swap": "node --max-old-space-size=4096 -r ts-node/register src/index.ts",
+    "api-server": "node --max-old-space-size=4096 -r ts-node/register src/api-server.ts",
+    "start": "npm run api-server"
+  },
+  "author": "Gamblers_Passion",
+  "license": "MIT",
+  "dependencies": {
+    "@coral-xyz/anchor": "^0.30.0",
+    "@openbook-dex/openbook": "^0.0.9",
+    "@project-serum/serum": "^0.13.65",
+    "@raydium-io/raydium-sdk": "^1.3.1-beta.52",
+    "@solana-developers/helpers": "^2.3.0",
+    "@solana/spl-token": "^0.4.6",
+    "@solana/web3.js": "^1.92.3",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.3",
+    "async-mutex": "^0.5.0",
+    "axios": "^1.7.2",
+    "bs58": "^5.0.0",
+    "chalk": "4.1.2",
+    "cors": "^2.8.5",
+    "date-fns": "^3.6.0",
+    "date-fns-tz": "^3.1.3",
+    "express": "^5.1.0",
+    "keypress": "^0.2.1",
+    "prompt-sync": "^4.2.0",
+    "readline": "^1.3.0",
+    "typescript": "^5.4.5"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.1",
+    "ts-node": "^10.9.2"
+  }
+}

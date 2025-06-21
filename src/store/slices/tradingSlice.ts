@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
-export type TradingStrategy = 'INCREASE_MAKERS_VOLUME' | 'INCREASE_VOLUME_ONLY'
+export type TradingStrategy = 'INCREASE_MAKERS_VOLUME' | 'INCREASE_VOLUME_ONLY' | 'LIQUIDITY_PHASE_TRADING'
 export type TradingStatus = 'idle' | 'running' | 'paused' | 'stopped' | 'error'
 
 interface TradingLap {

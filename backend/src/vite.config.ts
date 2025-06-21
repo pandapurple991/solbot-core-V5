@@ -9,7 +9,7 @@ export default defineConfig({
     host: '0.0.0.0',
     strictPort: false,
     cors: true,
-    allowedHosts: ['work-1-achbmftubyetysis.prod-runtime.all-hands.dev', 'work-2-achbmftubyetysis.prod-runtime.all-hands.dev'],
+    allowedHosts: ['work-1-necibljsbhoactmh.prod-runtime.all-hands.dev', 'work-2-necibljsbhoactmh.prod-runtime.all-hands.dev'],
     headers: {
       'X-Frame-Options': 'ALLOWALL',
       'Access-Control-Allow-Origin': '*',

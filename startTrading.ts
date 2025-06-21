@@ -5,7 +5,7 @@ import { swapConfig } from './swapConfig';
 import chalk from 'chalk';
 import fetch from 'node-fetch';
 import readline from 'readline';
-import keypress from 'keypress';
+const keypress = require('keypress');
 import { getPoolKeysForTokenAddress } from './pool-keys';
 
 // Function to get all wallet keys from the .env file

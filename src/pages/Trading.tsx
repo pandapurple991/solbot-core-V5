@@ -68,7 +68,7 @@ const Trading: React.FC = () => {
     duration 
   } = useSelector((state: RootState) => state.trading)
 
-  const [selectedStrategy, setSelectedStrategy] = useState<'INCREASE_MAKERS_VOLUME' | 'INCREASE_VOLUME_ONLY'>('INCREASE_MAKERS_VOLUME')
+  const [selectedStrategy, setSelectedStrategy] = useState<'INCREASE_MAKERS_VOLUME' | 'INCREASE_VOLUME_ONLY' | 'LIQUIDITY_PHASE_TRADING'>('INCREASE_MAKERS_VOLUME')
   const [isLoading, setIsLoading] = useState(false)
   const [walletStatuses, setWalletStatuses] = useState<Map<string, any>>(new Map())
   const [recentTransactions, setRecentTransactions] = useState<any[]>([])
@@ -137,7 +137,9 @@ const Trading: React.FC = () => {
       await backendService.startTrading(selectedStrategy, currentSession)
       
       // Update local state
-      const tradeDuration = selectedStrategy === 'INCREASE_MAKERS_VOLUME' ? 181000 : 1200000000
+      const tradeDuration = selectedStrategy === 'INCREASE_MAKERS_VOLUME' ? 181000 : 
+                         selectedStrategy === 'INCREASE_VOLUME_ONLY' ? 1200000000 : 
+                         0 // Continuous for LIQUIDITY_PHASE_TRADING
       dispatch(startTrading({ strategy: selectedStrategy, duration: tradeDuration }))
       dispatch(startLap(1))
       
