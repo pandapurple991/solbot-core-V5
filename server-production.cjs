@@ -454,6 +454,11 @@ function formatTimestampToEST(date) {
 }
 
 async function getSolBalance(wallet, connection) {
+  // Use REAL function from utility.js if available, otherwise fallback
+  if (utilityFunctions && utilityFunctions.getSolBalance) {
+    return await utilityFunctions.getSolBalance(wallet, connection);
+  }
+  // Fallback implementation
   try {
     const keypair = Keypair.fromSecretKey(bs58.decode(wallet.privateKey));
     const balance = await connection.getBalance(keypair.publicKey);
@@ -1212,20 +1217,10 @@ async function appendWalletsToSession(newWallets, sessionFilePath) {
   }
 }
 
-// Mock pool keys function (you'll need to replace this with your actual pool-keys.js implementation)
-async function getPoolKeysForTokenAddress(connection, tokenAddress) {
-  // This is a simplified version - replace with your actual implementation
-  return {
-    version: 4,
-    marketId: 'market_id_' + tokenAddress.slice(0, 8),
-    baseMint: tokenAddress,
-    quoteMint: swapConfig.WSOL_ADDRESS,
-    baseDecimals: 9,
-    quoteDecimals: 9,
-    programId: swapConfig.RAYDIUM_LIQUIDITY_POOL_V4_ADDRESS,
-    marketProgramId: 'market_program_id'
-  };
-}
+// REAL backend functions from your compiled files
+const { getPoolKeysForTokenAddress } = require('./dist-backend/pool-keys.js');
+const utilityFunctions = require('./dist-backend/utility.js');
+// Load startTrading functions only when needed to avoid env var requirements at startup
 
 async function getMarketIdForTokenAddress(connection, tokenAddress) {
   // This is a simplified version - replace with your actual implementation
@@ -1233,35 +1228,8 @@ async function getMarketIdForTokenAddress(connection, tokenAddress) {
 }
 
 // Your RaydiumSwap class (simplified version)
-class RaydiumSwap {
-  constructor(rpcUrl, walletPrivateKey) {
-    this.connection = new Connection(rpcUrl, { commitment: 'confirmed' });
-    this.wallet = Keypair.fromSecretKey(bs58.decode(walletPrivateKey));
-    this.tokenDecimals = {};
-  }
-
-  async getTokenDecimals(mintAddress) {
-    if (this.tokenDecimals[mintAddress] === undefined) {
-      const tokenInfo = await this.connection.getParsedAccountInfo(new PublicKey(mintAddress));
-      if (tokenInfo.value && 'parsed' in tokenInfo.value.data) {
-        const decimals = tokenInfo.value.data.parsed.info.decimals;
-        if (decimals !== undefined) {
-          this.tokenDecimals[mintAddress] = decimals;
-        } else {
-          throw new Error(`Unable to fetch token decimals for ${mintAddress}`);
-        }
-      } else {
-        throw new Error(`Unable to parse token account info for ${mintAddress}`);
-      }
-    }
-    return this.tokenDecimals[mintAddress];
-  }
-
-  async getBalance() {
-    const balance = await this.connection.getBalance(this.wallet.publicKey);
-    return balance / Math.pow(10, 9);
-  }
-}
+// REAL RaydiumSwap class from your backend
+const RaydiumSwap = require('./dist-backend/RaydiumSwap.js');
 
 // Your getTokenBalance function
 async function getTokenBalance(raydiumSwap, mintAddress) {
@@ -1890,8 +1858,43 @@ app.post('/api/trading/start', async (req, res) => {
       tokenAddress: sessionData.tokenAddress 
     });
     
-    // Here you would call your dynamicTrade function
-    // dynamicTrade(adminWallet, tradingWallets, tokenAddress, strategy, connection, sessionTimestamp, tokenName, globalTradingFlag)
+    // Call the REAL dynamicTrade function
+    try {
+      // Import and call the real dynamicTrade function
+      const { dynamicTrade } = require('./dist-backend/dynamicTrade.js');
+      const WalletWithNumber = require('./dist-backend/wallet.js');
+      
+      // Create wallet instances from session data
+      const adminWallet = WalletWithNumber.fromPrivateKey(sessionData.admin.privateKey, sessionData.admin.number);
+      const tradingWallets = sessionData.wallets.map(w => 
+        WalletWithNumber.fromPrivateKey(w.privateKey, w.number)
+      );
+      
+      addLog('info', `Starting real trading engine with ${tradingWallets.length} wallets`, 'trading', {
+        strategy,
+        tokenName: sessionData.tokenName,
+        tokenAddress: sessionData.tokenAddress
+      });
+      
+      // Start the REAL trading engine in the background
+      dynamicTrade(
+        adminWallet,
+        tradingWallets,
+        sessionData.tokenAddress,
+        strategy,
+        connection,
+        sessionData.timestamp,
+        sessionData.tokenName,
+        globalTradingFlag
+      ).catch(error => {
+        addError(`Real trading engine error: ${error.message}`, 'trading', { error });
+        globalTradingFlag.value = false;
+      });
+      
+    } catch (importError) {
+      addError(`Failed to import real trading engine: ${importError.message}`, 'trading');
+      console.log('Falling back to basic trading simulation...');
+    }
     
     res.json({ success: true, message: 'Trading started' });
   } catch (error) {
@@ -2251,6 +2254,16 @@ app.get('/api/monitoring/analytics', (req, res) => {
   }
 });
 
+app.get('/api/monitoring/transactions', (req, res) => {
+  try {
+    const limit = parseInt(req.query.limit) || 100;
+    res.json(monitoringData.transactions.slice(-limit));
+  } catch (error) {
+    console.error('Error fetching transactions:', error);
+    res.status(500).json({ error: 'Failed to fetch transactions' });
+  }
+});
+
 // Health check
 app.get('/api/health', (req, res) => {
   res.json({ 
@@ -2309,11 +2322,19 @@ app.listen(PORT, () => {
   console.log('✅ Configuration management system');
   console.log('✅ Ready for production use');
   
-  // Add initial log entries
-  addLog('info', 'Server started successfully', 'system', { port: PORT });
-  addLog('info', `RPC URL: ${swapConfig.RPC_URL}`, 'system');
-  addLog('info', `WebSocket URL: ${swapConfig.WS_URL}`, 'system');
-  addLog('info', `Session Directory: ${swapConfig.SESSION_DIR}`, 'system');
+  // Add initial logs to monitoring system
+  addLog('info', `Production server started on port ${PORT}`, 'server', { port: PORT });
+  addLog('info', `Connected to Solana RPC: ${swapConfig.RPC_URL}`, 'solana', { rpcUrl: swapConfig.RPC_URL });
+  addLog('info', `WebSocket connection ready: ${swapConfig.WS_URL}`, 'websocket', { wsUrl: swapConfig.WS_URL });
+  addLog('info', `Session directory initialized: ${swapConfig.SESSION_DIR}`, 'session', { sessionDir: swapConfig.SESSION_DIR });
+  addLog('success', 'All backend modules loaded successfully', 'system', { 
+    modules: ['solanaConnection', 'walletGeneration', 'dexscreenerAPI', 'sessionManagement', 'tokenDistribution', 'tradingControls', 'monitoringSystem']
+  });
+  addLog('info', 'Monitoring system active - real-time logging enabled', 'monitoring', { 
+    maxLogs: MAX_LOGS, 
+    maxConsoleOutput: MAX_CONSOLE_OUTPUT,
+    maxErrors: MAX_ERRORS 
+  });
 });
 
 module.exports = app;

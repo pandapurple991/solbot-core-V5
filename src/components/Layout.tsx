@@ -14,7 +14,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const { isDark } = useSelector((state: RootState) => state.theme)
 
   useEffect(() => {
-    dispatch(initializeTheme())
+    dispatch(initializeTheme(undefined))
   }, [dispatch])
 
   return (

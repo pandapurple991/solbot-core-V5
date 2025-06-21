@@ -86,11 +86,6 @@ const themeSlice = createSlice({
         }
         
         mediaQuery.addEventListener('change', handleChange)
-        
-        // Return cleanup function
-        return () => {
-          mediaQuery.removeEventListener('change', handleChange)
-        }
       }
     },
   },

@@ -12,8 +12,8 @@ import {
 interface TradingControlPanelProps {
   status: string
   strategy: string | null
-  selectedStrategy: 'INCREASE_MAKERS_VOLUME' | 'INCREASE_VOLUME_ONLY'
-  onStrategyChange: (strategy: 'INCREASE_MAKERS_VOLUME' | 'INCREASE_VOLUME_ONLY') => void
+  selectedStrategy: 'INCREASE_MAKERS_VOLUME' | 'INCREASE_VOLUME_ONLY' | 'LIQUIDITY_PHASE_TRADING'
+  onStrategyChange: (strategy: 'INCREASE_MAKERS_VOLUME' | 'INCREASE_VOLUME_ONLY' | 'LIQUIDITY_PHASE_TRADING') => void
   onStart: () => void
   onPause: () => void
   onResume: () => void
@@ -50,6 +50,14 @@ const TradingControlPanel: React.FC<TradingControlPanelProps> = ({
       icon: Zap,
       duration: '20 minutes',
       color: 'border-secondary bg-secondary/10'
+    },
+    {
+      value: 'LIQUIDITY_PHASE_TRADING' as const,
+      name: 'Liquidity Phase Trading',
+      description: 'Timed buy phases followed by sell phases',
+      icon: Settings,
+      duration: 'Continuous cycles',
+      color: 'border-accent bg-accent/10'
     }
   ]
 

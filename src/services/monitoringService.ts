@@ -91,7 +91,7 @@ class MonitoringService {
   private baseUrl: string;
 
   constructor() {
-    this.baseUrl = 'http://localhost:12001/api/monitoring';
+    this.baseUrl = '/api/monitoring';
   }
 
   private getErrorMessage(error: unknown): string {
@@ -150,7 +150,7 @@ class MonitoringService {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 10000);
       
-      const response = await fetch(`${this.baseUrl}/monitoring/console?limit=${limit}`, {
+      const response = await fetch(`${this.baseUrl}/console?limit=${limit}`, {
         signal: controller.signal
       });
       

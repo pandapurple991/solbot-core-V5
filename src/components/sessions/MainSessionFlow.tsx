@@ -585,7 +585,7 @@ const MainSessionFlow: React.FC<MainSessionFlowProps> = ({ isOpen, onClose }) =>
                 </p>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <button
                   onClick={() => startTradingWithStrategy('INCREASE_MAKERS_VOLUME')}
                   disabled={isLoading}
@@ -609,6 +609,19 @@ const MainSessionFlow: React.FC<MainSessionFlowProps> = ({ isOpen, onClose }) =>
                   </h4>
                   <p className="text-sm text-muted-foreground">
                     Focus on maximizing trading volume for your token
+                  </p>
+                </button>
+
+                <button
+                  onClick={() => startTradingWithStrategy('LIQUIDITY_PHASE_TRADING')}
+                  disabled={isLoading}
+                  className="p-6 border-2 border-border rounded-lg text-left hover:border-primary hover:bg-primary/5 transition-colors disabled:opacity-50"
+                >
+                  <h4 className="font-medium text-foreground mb-2">
+                    Liquidity Phase Trading
+                  </h4>
+                  <p className="text-sm text-muted-foreground">
+                    Timed buy phases followed by sell phases in continuous cycles
                   </p>
                 </button>
               </div>

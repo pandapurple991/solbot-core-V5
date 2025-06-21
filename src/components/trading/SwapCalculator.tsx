@@ -38,12 +38,14 @@ interface PoolInfo {
 
 interface SwapCalculatorProps {
   tokenSymbol: string
+  tokenAddress?: string
   onCalculationUpdate?: (calculations: SwapCalculation[]) => void
   isActive?: boolean
 }
 
 const SwapCalculator: React.FC<SwapCalculatorProps> = ({
   tokenSymbol,
+  tokenAddress,
   onCalculationUpdate,
   isActive = false
 }) => {
